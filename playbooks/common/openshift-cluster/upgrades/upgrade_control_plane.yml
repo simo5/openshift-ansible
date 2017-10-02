@@ -231,6 +231,24 @@
     - reconcile_jenkins_role_binding_result.rc == 0
     when: (not openshift.common.version_gte_3_7 | bool) and (openshift.common.version_gte_3_4_or_1_4 | bool)
 
+  - when: (openshift.common.version_gte_3_6 | bool) and (not openshift.common.version_gte_3_7 | bool)
+    block:
+    - copy:
+        src: "{{ __master_files_location }}/{{ item }}"
+        dest: "/tmp/{{ item }}"
+      with_items:
+      - "{{ __master_shared_resource_viewer_file }}"
+
+    - name: Fixup shared-resource-viewer role
+      oc_obj:
+        state: present
+        name: "shared-resource-viewer"
+        namespace: "openshift"
+        kind: role
+        files:
+        - "/tmp/{{ __master_shared_resource_viewer_file }}"
+        delete_after: true
+
   - name: Reconcile Security Context Constraints
     command: >
       {{ openshift.common.client_binary }} adm policy --config={{ openshift.common.config_base }}/master/admin.kubeconfig reconcile-sccs --confirm --additive-only=true -o name
