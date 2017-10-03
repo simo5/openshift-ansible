@@ -193,6 +193,7 @@
     # Another spot where we assume docker is running and do not want to accidentally trigger an unsafe
     # restart.
     skip_docker_role: True
+    __master_shared_resource_viewer_file: "shared_resource_viewer_role.yaml"
   tasks:
   - name: Reconcile Cluster Roles
     command: >
@@ -234,7 +235,7 @@
   - when: (openshift.common.version_gte_3_6 | bool) and (not openshift.common.version_gte_3_7 | bool)
     block:
     - copy:
-        src: "{{ __master_files_location }}/{{ item }}"
+        src: "{{ item }}"
         dest: "/tmp/{{ item }}"
       with_items:
       - "{{ __master_shared_resource_viewer_file }}"
